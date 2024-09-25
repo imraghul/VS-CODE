@@ -1,6 +1,10 @@
 import streamlit as st
 
-# Display the game banner
+# Initialize session state for the game progression
+if 'step' not in st.session_state:
+    st.session_state.step = 1
+
+# Step 1: Introduction
 st.text('''*******************************************************************************
           |                   |                  |                     |
  _________|________________.=""_;=.______________|_____________________|_______
@@ -22,33 +26,37 @@ ____/______/______/______/______/_____"=.o|o_.--""___/______/______/______/____
 /______/______/______/______/______/______/______/______/______/______/[Raghul G Art] 
 *******************************************************************************''')
 
-# Introduction
 st.write("Welcome to Treasure Island. \nYour mission is to find the treasure.")
 
-# First choice: Crossroad
-direction = st.selectbox("You are at a crossroad. Where do you want to go?", ["Left", "Right"])
-
-if direction == "Left":
-    # Second choice: Lake
-    waitrswim = st.selectbox('You have come to the lake. There is an island in the middle of the lake. What do you want to do?', ['Wait for a boat', 'Swim across'])
+# Step 2: Crossroad decision
+if st.session_state.step >= 1:
+    direction = st.selectbox("You are at a crossroad. Where do you want to go?", ["", "Left", "Right"], key='direction')
     
-    if waitrswim == 'Wait for a boat':
-        # Third choice: Door
-        door = st.selectbox("You arrive safely at the island. Which color door do you want to open?", ["Red", "Blue", "Yellow"])
-        
-        if door == "Red":
-            st.write("Burned by fire. Game Over.")
-        elif door == "Blue":
-            st.write("Eaten by beasts. Game Over.")
-        elif door == "Yellow":
-            st.write("Yayy! You Win!")
-        else:
-            st.write("Wrong input. Game Over.")
-            
-    elif waitrswim == 'Swim across':
-        st.write("Attacked by trout. Game Over.")
+    if direction == "Left" and st.session_state.step == 1:
+        st.session_state.step = 2
+    elif direction == "Right" and st.session_state.step == 1:
+        st.write("You fall into a river. Game Over.")
+        st.session_state.step = 3  # End the game
 
-elif direction == "Right":
-    st.write("You fall into a river. Game Over.")
-else:
-    st.write("Wrong input. Game Over.")
+# Step 3: Lake decision (only shown after choosing "Left")
+if st.session_state.step >= 2:
+    waitrswim = st.selectbox('You have come to the lake. There is an island in the middle of the lake. What do you want to do?', ["", "Wait for a boat", "Swim across"], key='waitrswim')
+
+    if waitrswim == "Wait for a boat" and st.session_state.step == 2:
+        st.session_state.step = 3
+    elif waitrswim == "Swim across" and st.session_state.step == 2:
+        st.write("Attacked by trout. Game Over.")
+        st.session_state.step = 4  # End the game
+
+# Step 4: Door decision (only shown after choosing "Wait for a boat")
+if st.session_state.step >= 3:
+    door = st.selectbox("You arrive safely at the island. Which color door do you want to open?", ["", "Red", "Blue", "Yellow"], key='door')
+    
+    if door == "Red":
+        st.write("Burned by fire. Game Over.")
+    elif door == "Blue":
+        st.write("Eaten by beasts. Game Over.")
+    elif door == "Yellow":
+        st.write("Yayy! You Win!")
+    
+    st.session_state.step = 4  # End the game
